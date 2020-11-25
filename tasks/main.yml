@@ -4,6 +4,13 @@
     service_id: "{{ mailpiler_id | default(mailpiler_default_id) }}"
     service_name: "{{ mailpiler_name | default(mailpiler_default_name) }}"
     service_path: "{{ mailpiler_path | default(mailpiler_default_path) }}"
+    service_database_user: "{{ mailpiler_database_user | default(mailpiler_default_database_user) }}"
+    service_database_pass: "{{ mailpiler_database_pass | default(mailpiler_default_database_pass) }}"
+    service_database_name: "{{ mailpiler_database_name | default(mailpiler_default_database_name) }}"
+    service_database_host: "{{ mailpiler_database_host | default(mailpiler_default_database_host) }}"
+    service_database_port: "{{ mailpiler_database_port | default(mailpiler_default_database_port) }}"
+    service_smarthost_name: "{{ mailpiler_smarthost_name | default(mailpiler_default_smarthost_name) }}"
+    service_smarthost_port: "{{ mailpiler_smarthost_port | default(mailpiler_default_smarthost_port) }}"
 
 - name: "Create directory for instane {{ service_id }} of {{ service_name }}"
   file:

@@ -2,3 +2,10 @@
 mailpiler_default_id: "si00000"
 mailpiler_default_name: "Mailpiler"
 mailpiler_default_path: "/srv/docker/mailpiler"
+mailpiler_default_database_user: "piler"
+mailpiler_default_database_pass: "piler"
+mailpiler_default_database_name: "piler"
+mailpiler_default_database_host: "database"
+mailpiler_default_database_port: 3306
+mailpiler_default_smarthost_name: "mx.fqdn"
+mailpiler_default_smarthost_port: 25

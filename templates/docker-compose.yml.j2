@@ -1,0 +1,44 @@
+version: '2.3'
+
+services:
+  piler:
+    build: ./piler           
+    restart: unless-stopped
+    depends_on:
+      database:
+        condition: service_healthy
+    env_file:
+      - .env
+    ports:
+      - "1080:80"
+
+  database:
+    restart: unless-stopped
+    image: mariadb:latest
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_unicode_ci
+    restart: unless-stopped
+    healthcheck:
+      test: mysqladmin -u{{ service_database_user }} -p{{ service_config.value.service_database_pass }} ping
+      interval: 10s
+      timeout: 5s
+      retries: 30
+    volumes:
+      - database-vol:/var/lib/mysql
+    env_file:
+      - .env
+
+volumes:
+  database-vol:
+    driver_opts:
+      type: none
+      device: "/srv/docker/mailpiler2/data/db"
+      o: bind
+
+#networks:
+#  default:
+#    driver: bridge
+#    enable_ipv6: true
+#    ipam:
+#      config:
+#        - subnet: "{{ service_instance_subnet_ipv4 }}"
+#        - subnet: "{{ service_instance_subnet_ipv6 }}"

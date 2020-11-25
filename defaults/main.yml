@@ -1,0 +1,4 @@
+---
+mailpiler_default_id: "si00000"
+mailpiler_default_name: "Mailpiler"
+mailpiler_default_path: "/srv/docker/mailpiler"

@@ -1,0 +1,84 @@
+---
+- name: "Define Facts for this service"
+  set_fact:
+    service_id: "{{ mailpiler_id | default(mailpiler_default_id) }}"
+    service_name: "{{ mailpiler_name | default(mailpiler_default_name) }}"
+    service_path: "{{ mailpiler_path | default(mailpiler_default_path) }}"
+
+- name: "Create directory for instane {{ service_id }} of {{ service_name }}"
+  file:
+    path: "{{ _directory.path }}"
+    owner: "{{ _directory.owner | default('root') }}"
+    group: "{{ _directory.group | default('root') }}"
+    mode: "{{ _directory.mode | default('0755') }}"
+    state: "directory"
+  with_items:
+    - path: "{{ service_path }}"
+      mode: "0700"
+    - path: "{{ service_path }}/conf"
+    - path: "{{ service_path }}/piler"
+    - path: "{{ service_path }}/data/db"
+  loop_control:
+    loop_var: _directory
+  register: _directory_register
+
+- name: "Copy static files for instance {{ service_id }} of {{ service_name }}"
+  copy:
+    src: "{{ _file.src }}"
+    dest: "{{ _file.dest }}"
+    owner: "{{ _file.owner | default('root') }}"
+    group: "{{ _file.group | default('root') }}"
+    mode: "{{ _file.mode | default('0644') }}"
+  with_items:
+    - src: "apache.conf"
+      dest: "{{ service_path }}/piler/apache.conf"
+    - src: "Dockerfile"
+      dest: "{{ service_path }}/piler/Dockerfile"
+    - src: "run.sh"
+      dest: "{{ service_path }}/piler/run.sh"
+      mode: "0755"
+  loop_control:
+    loop_var: _file
+  register: files_register
+
+- name: "Copy templates for instance {{ service_id }} of {{ service_name }}"
+  template:
+    src: "{{ _template.src }}"
+    dest: "{{ _template.dest }}"
+    owner: "{{ _template.owner | default('root') }}"
+    group: "{{ _template.group | default('root') }}"
+    mode: "{{ _template.mode | default('0644') }}"
+  with_items:
+    - src: "docker-compose.yml.j2"
+      dest: "{{ service_path }}/docker-compose.yml"
+    - src: "env.j2"
+      dest: "{{ service_path }}/conf/.env"
+  loop_control:
+    loop_var: _template
+  register: _templates_register
+
+- name: "Apply instance {{ service_id }} of {{ service_name }} to Update List"
+  lineinfile:
+    create: true
+    owner: "root"
+    group: "root"
+    mode: "0640"
+    dest: "/srv/docker/services.{{ inventory_hostname }}"
+    regexp: "^{{ service_path }}"
+    line: "{{ service_path }}"
+
+- name: "Run docker-compose pull for {{ service_id }} of {{ service_name }}"
+  shell: "cd {{ service_path }} && docker-compose pull"
+  register: docker_pull
+  changed_when: "'extract' in docker_pull.stderr"
+
+- name: "Run docker-compose build for {{ service_id }} of {{ service_name }}"
+  shell: "cd {{ service_path }} && docker-compose build"
+  register: docker_pull
+  changed_when: "'extract' in docker_pull.stderr"
+
+- name: "Start all services for {{ service_id }} of {{ service_name }}"
+  shell: "cd {{ service_path }} && docker-compose up -d"
+  register: docker_run
+  changed_when: "'Recreating' in docker_run.stderr"
+  when: "docker_pull.changed or _templates_register.changed or files_register.changed or _directory_register.changed"
